@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
 import psycopg2
+import connection as dbconn
+from hasspass import *
 
 class App:
     def __init__(self, root):
@@ -23,31 +25,36 @@ class App:
 
     def login(self):
         username = self.entry_username.get()
-        password = self.entry_password.get()
+        input_password = self.entry_password.get()
 
         try:
-            connection = psycopg2.connect(
-                host="localhost",
-                database="dbtaller_mecanico",
-                user="postgres",
-                password="Anzoli12"
-            )
+            con = dbconn.connection()
+            connection = con.open()
             cursor = connection.cursor()
-            query = "SELECT * FROM usuarios WHERE username = %s AND password = %s"
-            cursor.execute(query, (username, password))
+
+            query = "SELECT password FROM usuarios WHERE username = %s"
+            cursor.execute(query, (username,))
             user = cursor.fetchone()
 
             if user:
-                self.root.destroy()  
-                self.open_main_menu()  
+                stored_hashed_password = user[0]
+                stored_hashed_password = stored_hashed_password.encode('utf-8')
+
+                if check_password(input_password, stored_hashed_password):
+                    self.root.destroy()
+                    self.open_main_menu()
+                else:
+                    messagebox.showerror("Error", "Contraseña incorrecta")
             else:
-                messagebox.showerror("Error", "Usuario o contraseña incorrectos")
+                messagebox.showerror("Error", "Usuario no encontrado")
 
             cursor.close()
-            connection.close()
+            con.close()
 
         except Exception as e:
             messagebox.showerror("Error de conexión", f"No se pudo conectar a la base de datos.\nError: {e}")
+
+
 
     def open_main_menu(self):
         menu_window = tk.Tk()
@@ -130,19 +137,15 @@ class App:
     def search_user(self):
         user_id = self.entry_search_id.get()
         try:
-            connection = psycopg2.connect(
-                host="localhost",
-                database="dbtaller_mecanico",
-                user="postgres",
-                password="Anzoli12"
-            )
+            con = dbconn.connection()
+            connection = con.open()
             cursor = connection.cursor()
             query = "SELECT * FROM usuarios WHERE usuario_id = %s"
             cursor.execute(query, (user_id,))
             user = cursor.fetchone()
 
             if user:
-                self.buttonNuevoUsuario.config(state="disable")
+                self.buttonNuevoUsuario.config(state="disabled")
                 self.buttonSalvarUsuario.config(state="disabled")
                 self.buttonCancelarUsuario.config(state="normal")
                 self.buttonEditarUsuario.config(state="normal")
@@ -158,13 +161,13 @@ class App:
                 self.entry_username.delete(0, tk.END)
                 self.entry_username.insert(0, user[2])
                 self.entry_password.delete(0, tk.END)
-                self.entry_password.insert(0, user[3])
                 self.profile_combobox.set(user[4])
+                self.entry_user_id.config(state="disabled")
             else:
                 messagebox.showerror("Error", "Usuario no encontrado")
 
             cursor.close()
-            connection.close()
+            con.close()
         except Exception as e:
             messagebox.showerror("Error de conexión", f"No se pudo conectar a la base de datos.\nError: {e}")
 
@@ -184,12 +187,11 @@ class App:
             self.entry_username.delete(0, tk.END)
             self.entry_password.delete(0, tk.END)
             self.profile_combobox.set("")
-            self.entry_user_id.config(state=tk.NORMAL)
             self.entry_name.config(state=tk.NORMAL)
             self.entry_username.config(state=tk.NORMAL)
             self.entry_password.config(state=tk.NORMAL)
             self.profile_combobox.config(state=tk.NORMAL)
-        elif action == "Salvar":
+        elif action == "Salvar":            
             user_id = self.entry_user_id.get()
             name = self.entry_name.get()
             username = self.entry_username.get()
@@ -200,13 +202,11 @@ class App:
                 messagebox.showerror("Error", "Todos los campos deben ser llenados")
                 return
             
+            password = hash_password(password)
+            
             try:
-                connection = psycopg2.connect(
-                    host="localhost",
-                    database="dbtaller_mecanico",
-                    user="postgres",
-                    password="Anzoli12"
-                )
+                con = dbconn.connection()
+                connection = con.open()
                 cursor = connection.cursor()
 
                 if user_id:  # Si hay un ID, se asume que se está editando un usuario existente
@@ -231,17 +231,23 @@ class App:
                     messagebox.showinfo("Éxito", "Usuario creado correctamente")
                     self.handle_user_action("Cancelar")
                 cursor.close()
-                connection.close()
+                con.close()
 
             except Exception as e:
                 messagebox.showerror("Error de conexión", f"No se pudo conectar a la base de datos.\nError: {e}")
         elif action == "Editar":
+            self.entry_user_id.config(state="disabled")
             self.buttonNuevoUsuario.config(state="disable")
             self.buttonSalvarUsuario.config(state="normal")
             self.buttonCancelarUsuario.config(state="normal")
             self.buttonEditarUsuario.config(state="disable")
             messagebox.showinfo("Acción", "Puedes editar los campos ahora")
         elif action == "Cancelar":
+            self.entry_user_id.config(state=tk.NORMAL)
+            self.entry_name.config(state=tk.NORMAL)
+            self.entry_username.config(state=tk.NORMAL)
+            self.entry_password.config(state=tk.NORMAL)
+            self.profile_combobox.config(state=tk.NORMAL)
             self.entry_user_id.delete(0, tk.END)
             self.entry_name.delete(0, tk.END)
             self.entry_username.delete(0, tk.END)
