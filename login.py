@@ -173,24 +173,44 @@ class App:
 
     def handle_user_action(self, action):
         if action == "Nuevo":
-            self.buttonNuevoUsuario.config(state="disable")
-            self.buttonSalvarUsuario.config(state="normal")
-            self.buttonCancelarUsuario.config(state="normal")
-            self.buttonEditarUsuario.config(state="disable")
-            self.entry_user_id.config(state="disabled")
-            self.entry_name.config(state="normal")
-            self.entry_password.config(state="normal")
-            self.entry_username.config(state="normal")
-            self.profile_combobox.config(state="normal")
-            self.entry_user_id.delete(0, tk.END)
-            self.entry_name.delete(0, tk.END)
-            self.entry_username.delete(0, tk.END)
-            self.entry_password.delete(0, tk.END)
-            self.profile_combobox.set("")
-            self.entry_name.config(state=tk.NORMAL)
-            self.entry_username.config(state=tk.NORMAL)
-            self.entry_password.config(state=tk.NORMAL)
-            self.profile_combobox.config(state=tk.NORMAL)
+            try:
+                """
+                con = dbconn.connection()
+                connection = con.open()
+                cursor = connection.cursor()
+                
+                cursor.execute("select last_value from usuarios_usuario_id_seq;")
+                next_id = cursor.fetchone()[0]
+                """
+                
+                self.buttonNuevoUsuario.config(state="disable")
+                self.buttonSalvarUsuario.config(state="normal")
+                self.buttonCancelarUsuario.config(state="normal")
+                self.buttonEditarUsuario.config(state="disable")
+                self.entry_user_id.config(state="normal")
+                self.entry_name.config(state="normal")
+                self.entry_password.config(state="normal")
+                self.entry_username.config(state="normal")
+                self.profile_combobox.config(state="normal")
+                self.entry_user_id.delete(0, tk.END) #aqui se insertaria el next_id obtenido de la query
+                self.entry_name.delete(0, tk.END)
+                self.entry_username.delete(0, tk.END)
+                self.entry_password.delete(0, tk.END)
+                self.profile_combobox.set("")
+                self.entry_name.config(state=tk.NORMAL)
+                self.entry_username.config(state=tk.NORMAL)
+                self.entry_password.config(state=tk.NORMAL)
+                self.profile_combobox.config(state=tk.NORMAL)
+                self.entry_user_id.config(state="disabled")
+
+                """
+                cursor.close()
+                con.close()
+                """
+
+            except Exception as e:
+                messagebox.showerror("Error de conexión", f"No se pudo conectar a la base de datos.\nError: {e}")
+            
         elif action == "Salvar":            
             user_id = self.entry_user_id.get()
             name = self.entry_name.get()
