@@ -2,14 +2,13 @@ import os
 from dotenv import load_dotenv
 import psycopg2
 
-load_dotenv()
-
 class connection:
     def __init__(self) -> None:
-        self.host = os.environ.get("HOST")
-        self.database = os.environ.get("DATABASE")
-        self.user = os.environ.get("USER")
-        self.password = os.environ.get("PASSWORD")
+        load_dotenv()
+        self.host = os.environ['HOST']
+        self.database = os.environ['DATABASE']
+        self.user = os.environ['USERNAME']
+        self.password = os.environ['PASSWORD']
     
     def open(self):
         self.conn = psycopg2.connect(
