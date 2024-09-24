@@ -34,16 +34,20 @@ class App:
             con = dbconn.connection()
             connection = con.open()
             cursor = connection.cursor()
-            query = "SELECT password, perfil FROM usuarios WHERE username = %s"
+            query = "SELECT usuario_id, username, password, perfil FROM usuarios WHERE username = %s"
             cursor.execute(query, (username,))
             user = cursor.fetchone()
 
             if user:
-                stored_hashed_password = user[0]
+                stored_user_id = user[0]  # Almacenar el usuario_id del usuario
+                stored_username = user[1]  # Almacenar el username
+                stored_hashed_password = user[2]
                 stored_hashed_password = stored_hashed_password.encode('utf-8')
 
                 if check_password(input_password, stored_hashed_password):
-                    self.user_profile = user[1]  # Almacenar el perfil del usuario
+                    self.user_id = stored_user_id  # Almacenar el usuario_id
+                    self.username = stored_username   # Almacenar el username
+                    self.user_profile = user[3]       # Almacenar el perfil del usuario
                     self.root.destroy()
                     self.open_main_menu()
                 else:
@@ -56,6 +60,9 @@ class App:
 
         except Exception as e:
             messagebox.showerror("Error de conexión", f"No se pudo conectar a la base de datos.\nError: {e}")
+
+
+
 
     def open_main_menu(self):
         menu_window = tk.Tk()
@@ -320,9 +327,141 @@ class App:
             self.buttonCancelarUsuario.config(state="disabled")
             self.buttonEditarUsuario.config(state="disabled")
 
-    # Métodos placeholder para las demás interfaces
     def open_clients_interface(self):
-        messagebox.showinfo("Clientes", "Interfaz de Clientes aún no implementada.")
+        clients_window = tk.Tk()
+        clients_window.title("Gestión de Clientes")
+        clients_window.minsize(500, 400)
+
+        frame = tk.Frame(clients_window)
+        frame.pack(pady=20, padx=20)
+
+        # Ingreso del ID del cliente a buscar
+        tk.Label(frame, text="Ingrese ID del cliente a buscar:").grid(row=0, column=0, padx=5, pady=5)
+        self.entry_search_client_id = tk.Entry(frame)
+        self.entry_search_client_id.grid(row=0, column=1, padx=5, pady=5)
+        tk.Button(frame, text="Buscar", command=self.search_client).grid(row=0, column=2, padx=5, pady=5)
+
+        # Prellenado con información de usuario logueado
+    # Mostrar el ID del usuario logueado (usuario_id)
+        tk.Label(frame, text="Usuario ID:").grid(row=1, column=0, padx=5, pady=5, sticky='e')
+        self.entry_user_id = tk.Entry(frame)
+        self.entry_user_id.insert(0, self.user_id)  # Mostrar el usuario_id
+        self.entry_user_id.config(state='disabled')
+        self.entry_user_id.grid(row=1, column=1, padx=5, pady=5)
+
+        # Mostrar el username del usuario logueado
+        tk.Label(frame, text="Username:").grid(row=2, column=0, padx=5, pady=5, sticky='e')
+        self.entry_username = tk.Entry(frame)
+        self.entry_username.insert(0, self.username)  # Mostrar el username
+        self.entry_username.config(state='disabled')
+        self.entry_username.grid(row=2, column=1, padx=5, pady=5)
+
+        # Campos de información del cliente
+        tk.Label(frame, text="ID del Cliente:").grid(row=3, column=0, padx=5, pady=5, sticky='e')
+        self.entry_client_id = tk.Entry(frame)
+        self.entry_client_id.grid(row=3, column=1, padx=5, pady=5)
+
+        tk.Label(frame, text="Nombre del Cliente:").grid(row=4, column=0, padx=5, pady=5, sticky='e')
+        self.entry_client_name = tk.Entry(frame)
+        self.entry_client_name.grid(row=4, column=1, padx=5, pady=5)
+
+        tk.Label(frame, text="Teléfono:").grid(row=5, column=0, padx=5, pady=5, sticky='e')
+        self.entry_client_phone = tk.Entry(frame)
+        self.entry_client_phone.grid(row=5, column=1, padx=5, pady=5)
+
+        # Botones de acción
+        self.buttonNuevoCliente = tk.Button(frame, text="Nuevo", command=lambda: self.handle_client_action("Nuevo"))
+        self.buttonGuardarCliente = tk.Button(frame, text="Guardar", command=lambda: self.handle_client_action("Guardar"))
+        self.buttonEditarCliente = tk.Button(frame, text="Editar", command=lambda: self.handle_client_action("Editar"))
+        self.buttonCancelarCliente = tk.Button(frame, text="Cancelar", command=lambda: self.handle_client_action("Cancelar"))
+        
+        self.buttonNuevoCliente.grid(row=6, column=0, padx=5, pady=10)
+        self.buttonGuardarCliente.grid(row=6, column=1, padx=5, pady=10)
+        self.buttonEditarCliente.grid(row=6, column=2, padx=5, pady=10)
+        self.buttonCancelarCliente.grid(row=6, column=3, padx=5, pady=10)
+
+        # Desactivar botones de edición inicialmente
+        self.buttonGuardarCliente.config(state="disabled")
+        self.buttonEditarCliente.config(state="disabled")
+        self.buttonCancelarCliente.config(state="disabled")
+        clients_window.mainloop()
+        
+    def search_client(self):
+        client_id = self.entry_search_client_id.get()
+        try:
+            con = dbconn.connection()
+            connection = con.open()
+            cursor = connection.cursor()
+            query = "SELECT * FROM clientes WHERE cliente_id = %s"
+            cursor.execute(query, (client_id,))
+            client = cursor.fetchone()
+
+            if client:
+                self.entry_client_id.config(state="normal")
+                self.entry_client_id.delete(0, tk.END)
+                self.entry_client_id.insert(0, client[0])
+                self.entry_client_name.delete(0, tk.END)
+                self.entry_client_name.insert(0, client[2])
+                self.entry_client_phone.delete(0, tk.END)
+                self.entry_client_phone.insert(0, client[3])
+                self.buttonEditarCliente.config(state="normal")
+            else:
+                messagebox.showerror("Error", "Cliente no encontrado")
+
+            cursor.close()
+            con.close()
+        except Exception as e:
+            messagebox.showerror("Error de conexión", f"No se pudo conectar a la base de datos.\nError: {e}")
+
+    def handle_client_action(self, action):
+        if action == "Nuevo":
+            self.entry_client_id.config(state="normal")
+            self.entry_client_name.config(state="normal")
+            self.entry_client_phone.config(state="normal")
+            self.entry_client_id.delete(0, tk.END)
+            self.entry_client_name.delete(0, tk.END)
+            self.entry_client_phone.delete(0, tk.END)
+            self.buttonGuardarCliente.config(state="normal")
+            self.buttonCancelarCliente.config(state="normal")
+            self.buttonEditarCliente.config(state="disabled")
+
+        elif action == "Guardar":
+                # No necesitas obtener client_id ya que es SERIAL
+                user_id = self.user_id
+                client_name = self.entry_client_name.get()
+                client_phone = self.entry_client_phone.get()
+
+                if not client_name or not client_phone:
+                    messagebox.showerror("Error", "Todos los campos deben ser llenados")
+                    return
+
+                try:
+                    con = dbconn.connection()
+                    connection = con.open()
+                    cursor = connection.cursor()
+                    query = """
+                            INSERT INTO clientes (usuario_id, nombre, telefono)
+                            VALUES (%s, %s, %s)
+                        """
+                    cursor.execute(query, (user_id, client_name, client_phone))
+                    connection.commit()
+
+                    messagebox.showinfo("Éxito", "Cliente guardado correctamente")
+                    self.handle_client_action("Cancelar")
+                    cursor.close()
+                    con.close()
+
+                except Exception as e:
+                    messagebox.showerror("Error de conexión", f"No se pudo conectar a la base de datos.\nError: {e}")
+
+
+        elif action == "Cancelar":
+            self.entry_client_id.delete(0, tk.END)
+            self.entry_client_name.delete(0, tk.END)
+            self.entry_client_phone.delete(0, tk.END)
+            self.buttonGuardarCliente.config(state="disabled")
+            self.buttonEditarCliente.config(state="disabled")
+            self.buttonCancelarCliente.config(state="disabled")
 
     def open_carros_interface(self):
         messagebox.showinfo("Carros", "Interfaz de Carros aún no implementada.")
