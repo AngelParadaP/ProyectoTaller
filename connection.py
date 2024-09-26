@@ -7,7 +7,7 @@ class connection:
         load_dotenv()
         self.host = os.environ['HOST']
         self.database = os.environ['DATABASE']
-        self.user = os.environ['USERNAME']
+        self.user = os.environ['OSOARIO']
         self.password = os.environ['PASSWORD']
     
     def open(self):
