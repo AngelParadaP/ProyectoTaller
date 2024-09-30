@@ -9,67 +9,68 @@ from .pieces import PiecesFrame
 class Menu:
     def __init__(self, user_info):
         self.user_info = user_info
-        self.current_frame = None  # Para almacenar el frame actual
+        self.current_frame = None
 
     def open_main_menu(self):
         self.menu_window = tk.Tk()
         self.menu_window.title("Menú Principal")
         self.menu_window.minsize(500, 300)
-        
-        # Frame contenedor donde se mostrarán los frames
+
+        # Contenedor principal
         self.container = tk.Frame(self.menu_window)
         self.container.pack(fill="both", expand=True)
-        
+
+        # Frame para el menú
+        self.menu_frame = tk.Frame(self.container)
+        self.menu_frame.pack(side="top", fill="x")
+
+        # Etiqueta de bienvenida
         self.welcome_label = tk.Label(self.container, text=f'Hola {self.user_info["NOMBRE"]}', font=("Arial", 16))
-        self.welcome_label.pack(pady=20)  # Añadir algo de margen
+        self.welcome_label.pack(pady=20)
 
+        # Crear botones para el menú
+        self.create_menu_buttons()
 
-        def handle_menu_action(action):
-            if self.current_frame:
-                self.current_frame.destroy()  # Eliminar el frame actual
-                
-            self.welcome_label.forget()
-            
-            if action == "Usuarios":
-                self.current_frame = UsersFrame(self, self.container)
-            elif action == "Clientes":
-                self.current_frame = ClientsFrame(self, self.container)
-            elif action == "Vehiculos":
-                self.current_frame = VehiclesFrame(self, self.container)
-            elif action == "Reparaciones":
-                self.current_frame = RepairsFrame(self, self.container)
-            elif action == "Partes":
-                self.current_frame = PiecesFrame(self, self.container)
-            elif action == "Cerrar Sesion":
-                self.current_frame = None
-                self.menu_window.destroy()
-                from .login import Login
-                Login()
+        self.menu_window.mainloop()
 
-            if self.current_frame:
-                self.current_frame.pack(fill="both", expand=True)  # Mostrar el nuevo frame
+    def create_menu_buttons(self):
+        # Diccionario de acciones según el perfil del usuario
+        profile_actions = {
+            "admin": ["Usuarios", "Clientes", "Vehiculos", "Reparaciones", "Partes", "Cerrar Sesion"],
+            "secretaria": ["Clientes", "Vehiculos", "Cerrar Sesion"],
+            "mecanico": ["Vehiculos", "Reparaciones", "Cerrar Sesion"]
+        }
 
-        self.menu = tk.Menu(self.menu_window)
-        self.menu_window.config(menu=self.menu)
-
-        # Configurar el menú según el perfil del usuario
-        if self.user_info["PERFIL"].lower() == "admin":
-            self.menu.add_cascade(label="Usuarios", command=lambda: handle_menu_action("Usuarios"))
-            self.menu.add_cascade(label="Clientes", command=lambda: handle_menu_action("Clientes"))
-            self.menu.add_cascade(label="Vehiculos", command=lambda: handle_menu_action("Vehiculos"))
-            self.menu.add_cascade(label="Reparaciones", command=lambda: handle_menu_action("Reparaciones"))
-            self.menu.add_cascade(label="Partes", command=lambda: handle_menu_action("Partes"))
-            self.menu.add_cascade(label="Cerrar Sesion", command=lambda: handle_menu_action("Cerrar Sesion"))
-        elif self.user_info["PERFIL"].lower() == "secretaria":
-            self.menu.add_cascade(label="Clientes", command=lambda: handle_menu_action("Clientes"))
-            self.menu.add_cascade(label="Vehiculos", command=lambda: handle_menu_action("Vehiculos"))
-            self.menu.add_cascade(label="Cerrar Sesion", command=lambda: handle_menu_action("Cerrar Sesion"))
-        elif self.user_info["PERFIL"].lower() == "mecanico":
-            self.menu.add_cascade(label="Vehiculos", command=lambda: handle_menu_action("Vehiculos"))
-            self.menu.add_cascade(label="Reparaciones", command=lambda: handle_menu_action("Reparaciones"))
-            self.menu.add_cascade(label="Cerrar Sesion", command=lambda: handle_menu_action("Cerrar Sesion"))
+        actions = profile_actions.get(self.user_info["PERFIL"].lower())
+        if actions:
+            for action in actions:
+                button = tk.Button(self.menu_frame, text=action, command=lambda a=action: self.handle_menu_action(a))
+                button.pack(side="left", padx=5, pady=5)  # Espaciado entre botones
         else:
             messagebox.showerror("Error", "Perfil de usuario no reconocido")
             self.menu_window.destroy()
 
-        self.menu_window.mainloop()
+    def handle_menu_action(self, action):
+        if self.current_frame:
+            self.current_frame.destroy()  # Eliminar el frame actual
+            self.welcome_label.pack_forget()
+
+
+        if action == "Cerrar Sesion":
+            self.menu_window.destroy()
+            from .login import Login
+            Login()
+            return
+
+        # Inicializa el frame correspondiente
+        frame_class = {
+            "Usuarios": UsersFrame,
+            "Clientes": ClientsFrame,
+            "Vehiculos": VehiclesFrame,
+            "Reparaciones": RepairsFrame,
+            "Partes": PiecesFrame
+        }.get(action)
+
+        if frame_class:
+            self.current_frame = frame_class(self, self.container)
+            self.current_frame.pack(fill="both", expand=True)  # Mostrar el nuevo frame
