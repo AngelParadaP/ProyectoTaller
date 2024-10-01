@@ -151,6 +151,9 @@ class VehiclesFrame(tk.Frame):
                 self.entry_km.insert(0, vehicle[5])
 
                 self.entry_matricula.config(state="disabled")
+                self.entry_client_id.config(state='disable')
+                self.combo_clientes.config(state="disable")
+                self.buttonNuevoVehiculo.config(state="disable")
                 self.buttonEditarVehiculo.config(state="normal")
                 self.buttonCancelarVehiculo.config(state="normal")
                 self.buttonGuardarVehiculo.config(state="disabled")
@@ -171,9 +174,10 @@ class VehiclesFrame(tk.Frame):
         if action == "Nuevo":
             self.clear_entries()
             self.entry_matricula.config(state="normal")
+            self.buttonNuevoVehiculo.config(state="disable")
             self.buttonGuardarVehiculo.config(state="normal")
-            self.buttonCancelarVehiculo.config(state="normal")
             self.buttonEditarVehiculo.config(state="disabled")
+            self.buttonCancelarVehiculo.config(state="normal")
 
         elif action == "Guardar":
             license_plate = self.entry_matricula.get()
@@ -207,6 +211,10 @@ class VehiclesFrame(tk.Frame):
                 connection.commit()
 
                 messagebox.showinfo("Éxito", "Vehículo guardado correctamente.")
+                self.buttonNuevoVehiculo.config(state="normal")
+                self.buttonGuardarVehiculo.config(state="disabled")
+                self.buttonEditarVehiculo.config(state="disabled")
+                self.buttonCancelarVehiculo.config(state="disabled")
                 self.clear_entries()  
 
                 cursor.close()
@@ -249,6 +257,10 @@ class VehiclesFrame(tk.Frame):
                 connection.commit()
 
                 messagebox.showinfo("Éxito", "Vehículo editado correctamente.")
+                self.buttonNuevoVehiculo.config(state="normal")
+                self.buttonGuardarVehiculo.config(state="disabled")
+                self.buttonEditarVehiculo.config(state="disabled")
+                self.buttonCancelarVehiculo.config(state="disabled")
                 self.clear_entries()  
 
                 cursor.close()
@@ -261,12 +273,21 @@ class VehiclesFrame(tk.Frame):
 
         elif action == "Cancelar":
             self.clear_entries()
+            self.buttonNuevoVehiculo.config(state="normal")
             self.buttonGuardarVehiculo.config(state="disabled")
             self.buttonEditarVehiculo.config(state="disabled")
             self.buttonCancelarVehiculo.config(state="disabled")
 
     def clear_entries(self):
-        """Limpiar todos los campos de entrada"""
+        self.entry_client_id.config(state="normal")
+        self.entry_color.config(state="normal")
+        self.entry_km.config(state="normal")
+        self.entry_marca.config(state="normal")
+        self.entry_matricula.config(state="normal")
+        self.entry_modelo.config(state="normal")
+        self.combo_clientes.config(state="normal")
+        self.entry_search_matricula.delete(0, tk.END)
+        self.combo_clientes.set("")  # Deja el combobox en blanco
         self.entry_matricula.delete(0, tk.END)
         self.entry_client_id.config(state="normal")
         self.entry_client_id.delete(0, tk.END)

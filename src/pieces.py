@@ -88,7 +88,7 @@ class PiecesFrame(tk.Frame):
             messagebox.showerror("Error", "Todos los campos son obligatorios.")
             return
         
-        if int(stock) < 0:
+        if int(stock) <= 0:
             messagebox.showerror("Error", "El stock no puede ser negativo.")
             return
         
@@ -126,7 +126,7 @@ class PiecesFrame(tk.Frame):
             messagebox.showerror("Error", "Todos los campos son obligatorios.")
             return
         
-        if int(stock) < 0:
+        if int(stock) <= 0:
             messagebox.showerror("Error", "El stock no puede ser negativo.")
             return
         
