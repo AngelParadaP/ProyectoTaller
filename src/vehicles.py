@@ -61,6 +61,9 @@ class VehiclesFrame(tk.Frame):
         self.buttonGuardarVehiculo.config(state="disabled")
         self.buttonEditarVehiculo.config(state="disabled")
         self.buttonCancelarVehiculo.config(state="disabled")
+        
+        if self.parent.user_info['PERFIL'].lower() == 'mecanico':
+            self.buttonNuevoVehiculo.config(state="disabled")
 
     def load_clientes(self):
         """Cargar la lista de clientes en el combobox"""
@@ -157,6 +160,10 @@ class VehiclesFrame(tk.Frame):
                 self.buttonEditarVehiculo.config(state="normal")
                 self.buttonCancelarVehiculo.config(state="normal")
                 self.buttonGuardarVehiculo.config(state="disabled")
+                
+                if self.parent.user_info['PERFIL'].lower() == 'mecanico':
+                    self.buttonEditarVehiculo.config(state="disabled")
+                    self.buttonCancelarVehiculo.config(state="disabled")
 
             else:
                 messagebox.showerror("Error", "Vehículo no encontrado")

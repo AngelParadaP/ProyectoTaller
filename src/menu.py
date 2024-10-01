@@ -53,8 +53,8 @@ class Menu:
     def handle_menu_action(self, action):
         if self.current_frame:
             self.current_frame.destroy()  # Eliminar el frame actual
-            self.welcome_label.pack_forget()
-
+        
+        self.welcome_label.forget()
 
         if action == "Cerrar Sesion":
             self.menu_window.destroy()

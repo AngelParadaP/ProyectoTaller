@@ -67,6 +67,9 @@ class ClientsFrame(tk.Frame):
             if client_id == "":
                 messagebox.showerror("Error", "Ingrese un ID para buscar")
                 return
+            
+            if not client_id.isdigit():
+                raise ValueError("El ID debe ser un número")
 
             
             con = dbconn.connection()
@@ -109,7 +112,7 @@ class ClientsFrame(tk.Frame):
             cursor.close()
             con.close()
         except Exception as e:
-            messagebox.showerror("Error de busqueda de cliente", f"\nError: {e}")
+            messagebox.showerror("Error de busqueda de cliente", f"Error: {e}")
 
     def handle_client_action(self, action):
         if action == "Nuevo":

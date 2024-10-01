@@ -179,6 +179,10 @@ class RepairsFrame(tk.Frame):
             return
         
         try:
+            if not folio.isdigit():
+                raise ValueError("El folio debe ser un número")
+            
+            
             con = dbconn.connection()
             connection = con.open()
             cursor = connection.cursor()
@@ -239,6 +243,9 @@ class RepairsFrame(tk.Frame):
                 self.combo_piezas.config(state="disable")
                 self.entry_fecha_entrada.config(state="disable")
                 self.entry_falla.config(state="disabled")
+                
+                if self.parent.user_info['PERFIL'].lower() == 'mecanico':
+                    self.buttonEditar.config(state="disabled")
             else:
                 messagebox.showinfo("Información", "No se encontró el registro con el folio proporcionado.")
 

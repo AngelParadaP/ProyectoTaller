@@ -65,6 +65,13 @@ class UsersFrame(tk.Frame):
     def search_user(self):
         user_id = self.entry_search_id.get()
         try:
+            if user_id == "":
+                raise ValueError("Debe introducir un valor")
+        
+            if not user_id.isdigit():
+                raise ValueError("El ID debe ser un número")
+            
+            
             con = dbconn.connection()
             connection = con.open()
             cursor = connection.cursor()
@@ -97,7 +104,7 @@ class UsersFrame(tk.Frame):
             cursor.close()
             con.close()
         except Exception as e:
-            messagebox.showerror("Error de conexión", f"No se pudo conectar a la base de datos.\nError: {e}")
+            messagebox.showerror("Error de busqueda", f"Error: {e}")
 
     def handle_user_action(self, action):
         if action == "Nuevo":
